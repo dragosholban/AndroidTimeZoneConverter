@@ -13,6 +13,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -25,8 +29,11 @@ public class MainActivity extends AppCompatActivity {
     TimeZone selectedTimeZone;
     TextView convertedTimeTv;
     TextView convertedDateTv;
+    ListView listView;
+    ArrayAdapter<String> adapter;
 
     private static int CHOOSE_TIME_ZONE_REQUEST_CODE = 1;
+    private static int SELECT_TIME_ZONES_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
         selectTimeZoneBtn = findViewById(R.id.timeZoneButton);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, selectedTimezones);
-        ListView listView = findViewById(R.id.listView);
-        listView.setAdapter(adapter);
+        listView = findViewById(R.id.listView);
+        setupAdapter();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -107,6 +113,19 @@ public class MainActivity extends AppCompatActivity {
             selectTimeZoneBtn.setText(timezone);
             userTimeZone = TimeZone.getTimeZone(timezone);
         }
+        if (requestCode == SELECT_TIME_ZONES_REQUEST_CODE && resultCode == RESULT_OK) {
+            Bundle bundle = data.getBundleExtra("selectedTimezonesBundle");
+            ArrayList<String> selectedTimezonesArrayList = bundle.getStringArrayList("selectedTimezones");
+            Collections.sort(selectedTimezonesArrayList, new Comparator<String>() {
+                @Override
+                public int compare(String s, String t1) {
+                    return s.compareToIgnoreCase(t1);
+                }
+            });
+            selectedTimezones = new String[selectedTimezonesArrayList.size()];
+            selectedTimezonesArrayList.toArray(selectedTimezones);
+            setupAdapter();
+        }
         convertDate(userTimeZone, selectedTimeZone);
     }
 
@@ -123,5 +142,18 @@ public class MainActivity extends AppCompatActivity {
             convertedTimeTv.setText(time);
             convertedDateTv.setText(DateFormat.getDateInstance().format(convertedDate));
         }
+    }
+
+    public void selectTimezones(View view) {
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList("selectedTimezones", new ArrayList<String>(Arrays.asList(selectedTimezones)));
+        Intent intent = new Intent(this, SelectTimezonesActivity.class);
+        intent.putExtra("selectedTimezonesBundle", bundle);
+        startActivityForResult(intent, 2);
+    }
+
+    private void setupAdapter() {
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, selectedTimezones);
+        listView.setAdapter(adapter);
     }
 }

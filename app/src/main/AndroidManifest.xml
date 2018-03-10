@@ -16,7 +16,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TimeZoneActivity"></activity>
+        <activity android:name=".TimeZoneActivity" />
+        <activity android:name=".SelectTimezonesActivity"></activity>
     </application>
 
 </manifest>
