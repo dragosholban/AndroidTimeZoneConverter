@@ -11,10 +11,15 @@ import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
     Date localDate = new Date();
     Button dateBtn;
+    Button selectTimeZoneBtn;
+    TimeZone userTimeZone;
+
+    private static int CHOOSE_TIME_ZONE_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
         dateBtn = findViewById(R.id.dateButton);
         dateBtn.setText(DateFormat.getDateInstance().format(localDate));
+
+        selectTimeZoneBtn = findViewById(R.id.timeZoneButton);
     }
 
     public void showDatePicker(View view) {
@@ -68,6 +75,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void chooseTimezone(View view) {
         Intent intent = new Intent(this, TimeZoneActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, CHOOSE_TIME_ZONE_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CHOOSE_TIME_ZONE_REQUEST_CODE && resultCode == RESULT_OK) {
+            String timezone = data.getStringExtra("timezone");
+            selectTimeZoneBtn.setText(timezone);
+            userTimeZone = TimeZone.getTimeZone(timezone);
+        }
     }
 }
