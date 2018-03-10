@@ -5,7 +5,10 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -18,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     Button dateBtn;
     Button selectTimeZoneBtn;
     TimeZone userTimeZone;
+    String[] selectedTimezones = new String[] {"Europe/Bucharest", "Europe/London", "Europe/Paris"};
+    TimeZone selectedTimeZone;
 
     private static int CHOOSE_TIME_ZONE_REQUEST_CODE = 1;
 
@@ -55,6 +60,16 @@ public class MainActivity extends AppCompatActivity {
         dateBtn.setText(DateFormat.getDateInstance().format(localDate));
 
         selectTimeZoneBtn = findViewById(R.id.timeZoneButton);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, selectedTimezones);
+        ListView listView = findViewById(R.id.listView);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedTimeZone = TimeZone.getTimeZone(selectedTimezones[i]);
+            }
+        });
     }
 
     public void showDatePicker(View view) {
