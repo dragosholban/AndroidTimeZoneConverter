@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     TimeZone userTimeZone;
     String[] selectedTimezones = new String[] {"Europe/Bucharest", "Europe/London", "Europe/Paris"};
     TimeZone selectedTimeZone;
+    TextView convertedTimeTv;
+    TextView convertedDateTv;
 
     private static int CHOOSE_TIME_ZONE_REQUEST_CODE = 1;
 
@@ -33,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
         SeekBar seekBar = findViewById(R.id.seekBar);
         final TextView userTime = findViewById(R.id.userTime);
+        convertedTimeTv = findViewById(R.id.convertedTime);
+        convertedDateTv = findViewById(R.id.convertedDate);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -42,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 if (fromUser) {
                     localDate.setMinutes(0);
                 }
+                convertDate(userTimeZone, selectedTimeZone);
             }
 
             @Override
@@ -68,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedTimeZone = TimeZone.getTimeZone(selectedTimezones[i]);
+                convertDate(userTimeZone, selectedTimeZone);
             }
         });
     }
@@ -86,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         localDate.setMinutes(minutes);
         Button dateBtn = findViewById(R.id.dateButton);
         dateBtn.setText(DateFormat.getDateInstance().format(localDate));
+        convertDate(userTimeZone, selectedTimeZone);
     }
 
     public void chooseTimezone(View view) {
@@ -99,6 +106,22 @@ public class MainActivity extends AppCompatActivity {
             String timezone = data.getStringExtra("timezone");
             selectTimeZoneBtn.setText(timezone);
             userTimeZone = TimeZone.getTimeZone(timezone);
+        }
+        convertDate(userTimeZone, selectedTimeZone);
+    }
+
+    private void convertDate(TimeZone fromTimeZone, TimeZone toTimeZone) {
+        if (fromTimeZone != null && toTimeZone != null) {
+            long fromOffset = fromTimeZone.getOffset(localDate.getTime());
+            long toOffset = toTimeZone.getOffset(localDate.getTime());
+            long convertedTime = localDate.getTime() - (fromOffset - toOffset);
+            Date convertedDate = new Date(convertedTime);
+            int hours = convertedDate.getHours();
+            int minutes = convertedDate.getMinutes();
+            String time = (hours < 10 ? "0" + Integer.toString(hours) : Integer.toString(hours))
+                    + ":" + (minutes < 10 ? "0" + Integer.toString(minutes) : Integer.toString(minutes));
+            convertedTimeTv.setText(time);
+            convertedDateTv.setText(DateFormat.getDateInstance().format(convertedDate));
         }
     }
 }
