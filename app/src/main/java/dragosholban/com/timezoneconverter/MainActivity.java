@@ -1,6 +1,7 @@
 package dragosholban.com.timezoneconverter;
 
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -63,5 +64,10 @@ public class MainActivity extends AppCompatActivity {
         localDate.setMinutes(minutes);
         Button dateBtn = findViewById(R.id.dateButton);
         dateBtn.setText(DateFormat.getDateInstance().format(localDate));
+    }
+
+    public void chooseTimezone(View view) {
+        Intent intent = new Intent(this, TimeZoneActivity.class);
+        startActivity(intent);
     }
 }
