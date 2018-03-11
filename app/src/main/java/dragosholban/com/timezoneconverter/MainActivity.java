@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     TextView convertedDateTv;
     ListView listView;
     ArrayAdapter<String> adapter;
+    SeekBar seekBar;
 
     private static int CHOOSE_TIME_ZONE_REQUEST_CODE = 1;
     private static int SELECT_TIME_ZONES_REQUEST_CODE = 2;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         loadPreferences();
 
-        SeekBar seekBar = findViewById(R.id.seekBar);
+        seekBar = findViewById(R.id.seekBar);
         final TextView userTime = findViewById(R.id.userTime);
         convertedTimeTv = findViewById(R.id.convertedTime);
         convertedDateTv = findViewById(R.id.convertedDate);
@@ -222,5 +223,11 @@ public class MainActivity extends AppCompatActivity {
                 this.selectedTimeZone = TimeZone.getTimeZone(selectedTimezoneID);
             }
         }
+    }
+
+    public void convertCurrentDate(View view) {
+        localDate = new Date();
+        convertDate(userTimeZone, selectedTimeZone);
+        seekBar.setProgress(localDate.getHours());
     }
 }
