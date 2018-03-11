@@ -1,7 +1,9 @@
 package dragosholban.com.timezoneconverter;
 
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -18,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        loadPreferences();
 
         SeekBar seekBar = findViewById(R.id.seekBar);
         final TextView userTime = findViewById(R.id.userTime);
@@ -80,8 +86,26 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedTimeZone = TimeZone.getTimeZone(selectedTimezones[i]);
                 convertDate(userTimeZone, selectedTimeZone);
+                savePreferences();
             }
         });
+
+        if (userTimeZone != null) {
+            selectTimeZoneBtn.setText(userTimeZone.getID());
+        }
+        if (selectedTimezones.length > 0 && selectedTimeZone != null) {
+            int selectedTimeZonePosition = 0;
+            for (int i = 0; i < this.selectedTimezones.length; i++) {
+                if (selectedTimeZone.getID().equals(this.selectedTimezones[i])) {
+                    selectedTimeZonePosition = i;
+                    break;
+                }
+            }
+            listView.setItemChecked(selectedTimeZonePosition, true);
+            listView.setSelection(selectedTimeZonePosition);
+            selectedTimeZone = TimeZone.getTimeZone(selectedTimezones[selectedTimeZonePosition]);
+        }
+        convertDate(userTimeZone, selectedTimeZone);
     }
 
     public void showDatePicker(View view) {
@@ -127,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
             setupAdapter();
         }
         convertDate(userTimeZone, selectedTimeZone);
+        savePreferences();
     }
 
     private void convertDate(TimeZone fromTimeZone, TimeZone toTimeZone) {
@@ -155,5 +180,47 @@ public class MainActivity extends AppCompatActivity {
     private void setupAdapter() {
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, selectedTimezones);
         listView.setAdapter(adapter);
+    }
+
+    private void savePreferences() {
+        SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        if (userTimeZone != null) {
+            editor.putString("userTimezone", userTimeZone.getID());
+        }
+
+        if (selectedTimeZone != null) {
+            editor.putString("selectedTimezone", selectedTimeZone.getID());
+        }
+
+        editor.putStringSet("selectedTimezones", new HashSet<>(Arrays.asList(selectedTimezones)));
+
+        editor.commit();
+    }
+
+    private void loadPreferences() {
+        SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
+
+        String userTimezone = preferences.getString("userTimezone", TimeZone.getDefault().getID());
+        this.userTimeZone = TimeZone.getTimeZone(userTimezone);
+
+        Set<String> defaultSelectedTimezones = new HashSet<>(Arrays.asList(new String[] {"America/Los_Angeles", "America/New_York", "Asia/Hong_Kong", "Asia/Tokyo", "Europe/London", "Europe/Moscow", "Europe/Paris"}));
+        Set<String> selectedTimezones = preferences.getStringSet("selectedTimezones", defaultSelectedTimezones);
+        ArrayList<String> selectedTimezonesArrayList = new ArrayList<>(selectedTimezones);
+        Collections.sort(selectedTimezonesArrayList, new Comparator<String>() {
+            @Override
+            public int compare(String s, String t1) {
+                return s.compareToIgnoreCase(t1);
+            }
+        });
+        this.selectedTimezones = selectedTimezonesArrayList.toArray(new String[selectedTimezonesArrayList.size()]);
+
+        String selectedTimezoneID = preferences.getString("selectedTimezone", null);
+        if (selectedTimezoneID != null) {
+            if (selectedTimezones.contains(selectedTimezoneID)) {
+                this.selectedTimeZone = TimeZone.getTimeZone(selectedTimezoneID);
+            }
+        }
     }
 }
